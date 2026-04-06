@@ -57,7 +57,8 @@ export default class YearZeroCombat extends Combat {
       // Peek at cards so that unused cards can be returned by player
       /** @type {Card} */
       let card;
-      const cards = await this.peekAtCards(cardsToDraw);
+      // Don't attempt to draw 0 cards - deck implementation will return all cards (v14)
+      const cards = cardsToDraw > 0 ? await this.peekAtCards(cardsToDraw) : [];
 
       // FIXME DEBUG
       if (cards.length !== cardsToDraw) console.warn('Something went wrong: Incorrect number of cards drawn');
@@ -221,35 +222,23 @@ export default class YearZeroCombat extends Combat {
       bestCard,
       config: YZEC,
     });
-    const buttons = {
+
+    const cardId = await foundry.applications.api.DialogV2.prompt({
+      window: {
+        title: `${combatant.name}: ${game.i18n.localize('YZEC.Combat.Initiative.ChooseCard')}`,
+      },
+      content,
       ok: {
-        icon: '<i class="fas fa-check"></i>',
         label: game.i18n.localize('YZEC.OK'),
-        callback: html => {
-          const choice = html.find('input[name=card]:checked');
-          const cardId = choice.data('card-id');
-          return cards.find(c => c.id === cardId) ?? bestCard;
+        callback: (_event, button, _dialog) => {
+          return button.form?.elements?.card?.value ?? bestCard.id;
         },
       },
-    };
+      rejectClose: false,
+      modal: true,
+    });
 
-    /**
-     * @see {@link https://foundryvtt.com/api/classes/client.Dialog.html#wait}
-     */
-    return Dialog.wait(
-      {
-        title: `${combatant.name}: ${game.i18n.localize('YZEC.Combat.Initiative.ChooseCard')}`,
-        content,
-        buttons,
-        default: 'ok',
-        // Default value returned
-        close: () => bestCard,
-      },
-      {
-        classes: ['dialog', MODULE_ID, game.system.id],
-      },
-      {},
-    );
+    return cards.find(c => c.id === cardId) ?? bestCard;
   }
 
   /* ------------------------------------------ */

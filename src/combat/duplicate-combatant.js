@@ -46,7 +46,5 @@ export async function combatTrackerOnToggleDefeatedStatus(combatant) {
  * @returns {Combatant[]}
  */
 export function getCombatantsSharingToken(combatant) {
-  const combatantTokenIds = combatant.actor.getActiveTokens(false, true).map(t => t.id);
-  return combatant.parent.combatants
-    .filter(c => combatantTokenIds.includes(c.tokenId));
+  return combatant.parent.getCombatantsByToken(combatant.tokenId);
 }

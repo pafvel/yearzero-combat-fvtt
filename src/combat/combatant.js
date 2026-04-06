@@ -142,7 +142,7 @@ export default class YearZeroCombatant extends Combatant {
     const updateData = {
       [`flags.${MODULE_ID}`]: {
         isGroupLeader: true,
-        '-=groupId': null,
+        groupId: null,
       },
     };
     if (typeof cardValue !== 'undefined') updateData[`flags.${MODULE_ID}.cardValue`] = cardValue;
@@ -156,13 +156,15 @@ export default class YearZeroCombatant extends Combatant {
     // return this.unsetIsGroupLeader();
     const updates = [{
       _id: this.id,
-      [`flags.${MODULE_ID}.-=isGroupLeader`]: null,
+      [`flags.${MODULE_ID}`]: { isGroupLeader: null },
     }];
     for (const f of this.getFollowers()) {
       updates.push({
         _id: f.id,
-        [`flags.${MODULE_ID}.cardValue`]: this.cardValue,
-        [`flags.${MODULE_ID}.-=groupId`]: null,
+        [`flags.${MODULE_ID}`]: {
+          cardValue: this.cardValue,
+          groupId: null,
+        },
       });
     }
     return this.combat.updateEmbeddedDocuments('Combatant', updates);
@@ -177,7 +179,7 @@ export default class YearZeroCombatant extends Combatant {
         cardValue: this.cardValue + getCombatantSortOrderModifier(),
         cardName: this.cardName,
         groupId: this.id,
-        '-=isGroupLeader': null,
+        isGroupLeader: null,
       },
     };
     if (typeof initiative !== 'undefined') updateData.initiative = initiative;
